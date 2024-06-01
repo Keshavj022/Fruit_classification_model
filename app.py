@@ -32,29 +32,9 @@ def predict(model, image):
 
 # Streamlit app
 def main():
-
-    
-    gradient_bg_css = """
-        background: linear-gradient(to right, #4C0FB5, #198DD0); 
-        padding: 20px; 
-        border-radius: 10px; 
-        border: 4px solid white; /* Adding a 2px solid white border */
-    """
-    gradient_bg_css2 = """
-        background: linear-gradient(to right, #4C0FB5, #198DD0); 
-        padding: 4px; 
-        border-radius: 5px; 
-        border: 3px solid white; /* Adding a 2px solid white border */
-        font-size: 10px;
-    """
-
-    
-    title_text = "<h1 style='text-align: center; color: white;'>Fruits Classification Web App</h1>"
-    styled_= f"<div style='{gradient_bg_css}'>{title_text}</div>"
-
-    
+    title_text = "Fruit  Classification Model"
     st.write("")
-    st.markdown(styled_, unsafe_allow_html=True)
+    st.markdown(title_text, unsafe_allow_html=True)
     st.write("")
     st.write("")
 
