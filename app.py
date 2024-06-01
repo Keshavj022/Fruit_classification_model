@@ -61,6 +61,3 @@ if uploaded_file is not None:
     st.write("Classifying...")
     label = predict(img)
     st.write(f'This is a {label}')
-
-if __name__ == '__main__':
-    main()
