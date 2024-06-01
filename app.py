@@ -41,7 +41,7 @@ class_names = ['Apple Braeburn', 'Apple Crimson Snow', 'Apple Golden 1', 'Apple 
                'Tomato Yellow', 'Walnut', 'Watermelon']
 
 # Function to preprocess the image and predict the class
-def predict(img):
+def prediction(img):
     img = img.resize((150, 150))  # Resize the image to the size your model expects
     img = img_to_array(img) / 255.0  # Normalize the image
     img = np.expand_dims(img, axis=0)  # Add batch dimension
@@ -59,5 +59,5 @@ if uploaded_file is not None:
     st.image(img, caption='Uploaded Image.', use_column_width=True)
     st.write("")
     st.write("Classifying...")
-    label = predict(img)
+    label = prediction(img)
     st.write(f'This is a {label}')
