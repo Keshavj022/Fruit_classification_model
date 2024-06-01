@@ -1,6 +1,7 @@
 import streamlit as st
 from keras.models import load_model
 from keras.preprocessing import image
+from keras.preprocessing.image import img_to_array
 import numpy as np
 from PIL import Image
 import os
@@ -41,9 +42,9 @@ class_names = ['Apple Braeburn', 'Apple Crimson Snow', 'Apple Golden 1', 'Apple 
                'Tomato Yellow', 'Walnut', 'Watermelon']
 
 # Function to preprocess the image and predict the class
-def predict(model, image):
+def prediction(model, image):
     img = image.resize((100, 100))  # Resize the image to the size your model expects
-    img = image.img_to_array(img) / 255.0  # Normalize the image
+    img = img_to_array(img) / 255.0  # Normalize the image
     img.reshape((-1, 100, 100, 3))
     predictions = model.predict(img)
     return class_names[np.argmax(predictions)]
@@ -59,5 +60,5 @@ if uploaded_file is not None:
     st.image(img, caption='Uploaded Image.', use_column_width=True)
     st.write("")
     st.write("Classifying...")
-    label = predict(model, img)
+    label = prediction(model, img)
     st.write(f'This is a {label}')
