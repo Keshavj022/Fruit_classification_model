@@ -73,14 +73,27 @@ def main():
             model = load_saved_model()
             prediction = predict(model, uploaded_image)
             
+            # Debugging: Print the shape of the prediction
+            st.write(f"Prediction shape: {prediction.shape}")
+            st.write(f"Prediction: {prediction}")
+            
+            # Ensure that the model output is as expected
+            if prediction.shape[1] != len(fruits):
+                st.error(f"Model output shape {prediction.shape[1]} does not match number of classes {len(fruits)}")
+                return
+            
             top_5_indices = np.argsort(prediction[0])[::-1][:5]
             top_5_probs = prediction[0][top_5_indices]
             table_data = {'Class': [], 'Probability': []}
             
             for i in range(5):
-                result = [k for k, v in fruits.items() if v == top_5_indices[i]][0]
-                table_data['Class'].append(result)
-                table_data['Probability'].append(top_5_probs[i])
+                # Ensure index is within bounds
+                if top_5_indices[i] < len(fruits):
+                    result = [k for k, v in fruits.items() if v == top_5_indices[i]][0]
+                    table_data['Class'].append(result)
+                    table_data['Probability'].append(top_5_probs[i])
+                else:
+                    st.error(f"Index {top_5_indices[i]} is out of bounds")
             
             st.write("Top 5 Predictions:")
             st.table(table_data)
