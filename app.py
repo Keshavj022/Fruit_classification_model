@@ -1,6 +1,6 @@
 import streamlit as st
 from keras.models import load_model
-from keras.preprocessing.image import img_to_array
+from keras.preprocessing import image
 import numpy as np
 from PIL import Image
 import os
@@ -22,7 +22,7 @@ if not os.path.exists(MODEL_PATH):
 # Load the trained model
 model = load_model(MODEL_PATH)
 
-# Define the class names from the Fruits-360 dataset
+# Define the class names (adjust these to your actual class names)
 class_names = ['Apple Braeburn', 'Apple Crimson Snow', 'Apple Golden 1', 'Apple Golden 2', 'Apple Golden 3',
                'Apple Granny Smith', 'Apple Pink Lady', 'Apple Red 1', 'Apple Red 2', 'Apple Red 3',
                'Apple Red Delicious', 'Apple Red Yellow 1', 'Apple Red Yellow 2', 'Apricot', 'Avocado',
@@ -41,10 +41,10 @@ class_names = ['Apple Braeburn', 'Apple Crimson Snow', 'Apple Golden 1', 'Apple 
                'Tomato Yellow', 'Walnut', 'Watermelon']
 
 # Function to preprocess the image and predict the class
-def prediction(img):
-    img = img.resize((150, 150))  # Resize the image to the size your model expects
-    img = img_to_array(img) / 255.0  # Normalize the image
-    img = np.expand_dims(img, axis=0)  # Add batch dimension
+def predict(model, image):
+    img = image.resize((100, 100))  # Resize the image to the size your model expects
+    img = image.img_to_array(img) / 255.0  # Normalize the image
+    img.reshape((-1, 100, 100, 3))
     predictions = model.predict(img)
     return class_names[np.argmax(predictions)]
 
@@ -52,12 +52,12 @@ def prediction(img):
 st.title("Fruit Classification")
 st.write("Upload an image of a fruit to classify it")
 
-uploaded_file = st.file_uploader("Choose an image...", type="jpg")
+uploaded_file = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "png"])
 
 if uploaded_file is not None:
     img = Image.open(uploaded_file)
     st.image(img, caption='Uploaded Image.', use_column_width=True)
     st.write("")
     st.write("Classifying...")
-    label = prediction(img)
+    label = predict(model, img)
     st.write(f'This is a {label}')
