@@ -5,8 +5,12 @@ import numpy as np
 from PIL import Image
 import os
 import requests
+
+# URL to your model file in the Google Cloud Storage bucket
 MODEL_URL = 'https://storage.googleapis.com/fruit_classification/model2.h5'
 MODEL_PATH = 'model2.h5'
+
+# Download the model file if it doesn't exist locally
 if not os.path.exists(MODEL_PATH):
     with st.spinner('Downloading model...'):
         response = requests.get(MODEL_URL, stream=True)
@@ -14,202 +18,49 @@ if not os.path.exists(MODEL_PATH):
             for chunk in response.iter_content(chunk_size=8192):
                 file.write(chunk)
         st.success('Model downloaded successfully!')
-def load_saved_model():
-    return load_model(MODEL_PATH)
 
+# Load the trained model
+model = load_model(MODEL_PATH)
 
-def preprocess_image(image):
-    img = Image.open(image).convert('RGB')
-    img = img.resize((100,100))
-    img_array = np.array(img) / 255.0
-    return img_array.reshape((-1, 100, 100, 3))
+# Define the class names (adjust these to your actual class names)
+class_names = ['Apple Braeburn', 'Apple Crimson Snow', 'Apple Golden 1', 'Apple Golden 2', 'Apple Golden 3',
+               'Apple Granny Smith', 'Apple Pink Lady', 'Apple Red 1', 'Apple Red 2', 'Apple Red 3',
+               'Apple Red Delicious', 'Apple Red Yellow 1', 'Apple Red Yellow 2', 'Apricot', 'Avocado',
+               'Avocado ripe', 'Banana', 'Banana Red', 'Cactus fruit', 'Cantaloupe 1', 'Cantaloupe 2',
+               'Carambula', 'Cherry 1', 'Cherry 2', 'Cherry Rainier', 'Cherry Wax Black', 'Cherry Wax Red',
+               'Cherry Wax Yellow', 'Chestnut', 'Clementine', 'Cocos', 'Dates', 'Granadilla', 'Grape Blue',
+               'Grape Pink', 'Grape White', 'Grape White 2', 'Grape White 3', 'Grape White 4', 'Grapefruit Pink',
+               'Grapefruit White', 'Guava', 'Huckleberry', 'Kaki', 'Kiwi', 'Kumquats', 'Lemon', 'Lemon Meyer',
+               'Limes', 'Litchi', 'Mandarine', 'Mango', 'Mangostan', 'Maracuja', 'Melon Piel de Sapo', 'Mulberry',
+               'Nectarine', 'Orange', 'Papaya', 'Passion Fruit', 'Peach', 'Peach 2', 'Peach Flat', 'Pear',
+               'Pear Abate', 'Pear Forelle', 'Pear Kaiser', 'Pear Monster', 'Pear Red', 'Pear Stone', 'Pear Williams',
+               'Pepino', 'Physalis', 'Physalis with Husk', 'Pineapple', 'Pineapple Mini', 'Pitahaya Red',
+               'Plum', 'Plum 2', 'Plum 3', 'Pomegranate', 'Quince', 'Rambutan', 'Raspberry', 'Redcurrant',
+               'Salak', 'Strawberry', 'Strawberry Wedge', 'Tamarillo', 'Tangelo', 'Tomato 1', 'Tomato 2',
+               'Tomato 3', 'Tomato 4', 'Tomato Cherry Red', 'Tomato Heart', 'Tomato Maroon', 'Tomato not Ripened',
+               'Tomato Yellow', 'Walnut', 'Watermelon']
 
-def predict(model, image):
-    img_array = preprocess_image(image)
-    prediction = model.predict(img_array)
-    return prediction
-
+# Function to preprocess the image and predict the class
+def predict(image):
+    img = image.resize((100, 100))  # Resize the image to the size your model expects
+    img = image.img_to_array(img) / 255.0  # Normalize the image
+    img = np.expand_dims(img, axis=0)  # Add batch dimension
+    predictions = model.predict(img)
+    return class_names[np.argmax(predictions)]
 
 # Streamlit app
-def main():
+st.title("Fruit Classification")
+st.write("Upload an image of a fruit to classify it")
 
-    
-    gradient_bg_css = """
-        background: linear-gradient(to right, #4C0FB5, #198DD0); 
-        padding: 20px; 
-        border-radius: 10px; 
-        border: 4px solid white; /* Adding a 2px solid white border */
-    """
-    gradient_bg_css2 = """
-        background: linear-gradient(to right, #4C0FB5, #198DD0); 
-        padding: 4px; 
-        border-radius: 5px; 
-        border: 3px solid white; /* Adding a 2px solid white border */
-        font-size: 10px;
-    """
+uploaded_file = st.file_uploader("Choose an image...", type="jpg")
 
-    
-    title_text = "<h1 style='text-align: center; color: white;'>Fruits Classification Web App</h1>"
-    styled_= f"<div style='{gradient_bg_css}'>{title_text}</div>"
-
-    
+if uploaded_file is not None:
+    img = Image.open(uploaded_file)
+    st.image(img, caption='Uploaded Image.', use_column_width=True)
     st.write("")
-    st.markdown(styled_, unsafe_allow_html=True)
-    st.write("")
-    st.write("")
+    st.write("Classifying...")
+    label = predict(img)
+    st.write(f'This is a {label}')
 
-    # Upload image
-    uploaded_image = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "png"])
-    
-    if uploaded_image is not None:
-        
-        image = Image.open(uploaded_image)
-        st.image(image, caption='Uploaded Image', use_column_width=True)
-        st.markdown(
-            """
-            <style>
-                .center {
-                    display: flex;
-                    justify-content: center;
-                    align-items: center;    
-                }
-                .main {
-                    text-align: center;
-                }
-                h3{
-                    font-size: 25px
-                }   
-                .st-emotion-cache-16txtl3 h1 {
-                font: bold 29px arial;
-                text-align: center;
-                margin-bottom: 15px
-
-                }
-                div[data-testid=stSidebarContent] {
-                background-color: #111;
-                border-right: 4px solid white;
-                padding: 8px!important
-
-                }
-
-                div.block-containers{
-                    padding-top: 0.7rem
-                }
-
-                .st-emotion-cache-z5fcl4{
-                    padding-top: 5rem;
-                    padding-bottom: 1rem;
-                    padding-left: 1.1rem;
-                    padding-right: 2.2rem;
-                    overflow-x: hidden;
-                }
-
-                .st-emotion-cache-16txtl3{
-                    padding: 2.7rem 0.6rem
-                }
-
-                .plot-container.plotly{
-                    border: 0px solid white;
-                    border-radius: 6px;
-                }
-
-                div.st-emotion-cache-1r6slb0 span.st-emotion-cache-10trblm{
-                    font: bold 24px tahoma
-                }
-                div [data-testid=stImage]{
-                    text-align: center;
-                    display: block;
-                    margin-left: auto;
-                    margin-right: auto;
-                    width: 100%;
-                }
-
-                div[data-baseweb=select]>div{
-                    cursor: pointer;
-                    background-color: #111;
-                    border: 0px solid white;
-                }
-                div[data-baseweb=select]>div:hover{
-                    border: 0px solid white
-
-                }
-                div[data-baseweb=base-input]{
-                    background-color: #111;
-                    border: 0px solid white;
-                    border-radius: 5px;
-                    padding: 5px
-                }
-
-                div[data-testid=stFormSubmitButton]> button{
-                    width: 20%;
-                    background-image: linear-gradient(to right, #6a11cb 0%, #2575fc 100%);
-                    border: 3px solid white;
-                    padding: 18px;
-                    border-radius: 30px;
-                    opacity: 0.8;
-                }
-                div[data-testid=stFormSubmitButton]  p{
-                    font-weight: bold;
-                    font-size : 20px
-                }
-
-                div[data-testid=stFormSubmitButton]> button:hover{
-                    opacity: 3;
-                    border: 2px solid white;
-                    color: white
-                }
-
-            </style>
-            """,
-                unsafe_allow_html=True
-            )
-        st.write("")
-        with st.form('form'):
-            btn = st.form_submit_button('predict')
-        if btn:
-            st.write("")
-            st.write("")
-            st.write("")
-            model = load_saved_model()
-            prediction = predict(model, uploaded_image)
-            top_5_indices = np.argsort(prediction[0])[::-1][:5]
-            top_5_probs = prediction[0][top_5_indices]
-            table_data = {'Class': [], 'Probability': []}
-            for i in range(5):
-                result = [k for k, v in fruits.items() if v == top_5_indices[i]][0]
-                table_data['Class'].append(result)
-                table_data['Probability'].append(top_5_probs[i])
-            title_text = "<h3 style='text-align: center; color: white;'>Top 5 Predictions:</h3>"
-            styled_title = f"<div style='{gradient_bg_css2}'>{title_text}</div>"
-            st.write("")
-            st.write("")
-            st.write("")
-            st.markdown(styled_title, unsafe_allow_html=True)
-            table_style = "<style>th {background-image: linear-gradient(to right, #6a11cb 0%, #2575fc 100%); color: white;}</style>"
-            st.write(table_style, unsafe_allow_html=True)
-            st.write("")
-            st.table(table_data)
-            predicted_class = np.argmax(prediction)
-            predicted_label = [k for k, v in fruits.items() if v == predicted_class][0]
-            prediction_css = """
-            background-color: white;
-            color: blue;
-            border: 2px solid blue;
-            border-radius: 5px;
-            padding: 10px;
-            text-align: center;
-            """
-            st.write("")
-            st.write("")
-            st.markdown(
-                f'<h3 style="{prediction_css}">Prediction:</h3>',
-                unsafe_allow_html=True
-            )
-            st.write("")
-            st.write("")
-            st.write("")
-            markdown_text = f'<spin style="color:lightgray;background:#575860;font-size:30px;border: 2px solid lightgray; padding: 10px;">{predicted_label}</spin>'
-            st.markdown(markdown_text,unsafe_allow_html=True)
-        
 if __name__ == '__main__':
     main()
